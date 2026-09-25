@@ -1,5 +1,7 @@
 # FinPulse: Market Data Warehouse & Analytics Pipeline
 
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue) ![PySpark](https://img.shields.io/badge/PySpark-ETL-E25A1C) ![MySQL 8](https://img.shields.io/badge/MySQL-8-blue) ![Tests](https://img.shields.io/badge/tests-8%20passing-brightgreen) ![License: MIT](https://img.shields.io/badge/license-MIT-green)
+
 An end-to-end ETL pipeline that ingests multi-year equity price and volume files,
 **validates and de-duplicates them in a PySpark staging layer**, computes **rolling analytics
 with Spark window functions**, and loads a **star-schema warehouse** (MySQL, or SQLite
@@ -7,6 +9,17 @@ locally). The warehouse feeds a Power BI dashboard with sector drill-down and a
 **data-quality panel**.
 
 **Stack:** Python · PySpark · SQLAlchemy · MySQL 8 / SQLite · Pandas · Power BI (DAX) · Matplotlib · pytest
+
+## Highlights
+
+- Loads **47,000+ rows across 6 years and 31 instruments** in about 23 seconds.
+- **8 validation rules** in a PySpark staging layer. Every rejected row is kept with its reasons, so nothing is lost silently.
+- A **star-schema warehouse** with idempotent loads, where every fact row traces back to its load run.
+- Rolling returns, moving averages and volatility computed with **Spark window functions**, feeding a **Power BI** dashboard.
+
+## Contents
+
+[Pipeline](#pipeline) · [Staging](#1-staging--validation-finpulsestagingpy) · [Star schema](#2-star-schema-finpulsewarehousepy-sqlschema_mysqlsql) · [Analytics](#3-rolling-analytics-finpulseanalyticspy) · [Dashboard](#4-dashboard-powerbi) · [Running it](#running-it) · [Project layout](#project-layout) · [Author](#author) · [License](#license)
 
 ![Dashboard preview](docs/dashboard_preview.png)
 
@@ -160,3 +173,11 @@ tests/            staging rules, analytics vs pandas, end-to-end + idempotency
 
 - The source data is synthetic: geometric Brownian motion with a sector-level common factor, so sectors move together as they do in real markets. The tickers are fictional.
 - Each run processes the files it is given in full. An incremental mode would load only new dates, and would need a 50-row look-back from the warehouse so the moving averages stay correct.
+
+## Author
+
+**Gorika Shukla** · GitHub [@gorikashukla17-wq](https://github.com/gorikashukla17-wq)
+
+## License
+
+Released under the [MIT License](LICENSE).
