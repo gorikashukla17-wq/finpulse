@@ -1,0 +1,38 @@
+// FinPulse – DAX measures for the Power BI dashboard.
+// Model: fact_daily_price related to dim_instrument, dim_sector, dim_date (single direction,
+// dimension -> fact) and to etl_load_run on load_run_id.
+
+Avg Daily Return = AVERAGE ( fact_daily_price[daily_return] )
+
+Annualised Return = [Avg Daily Return] * 252
+
+Avg Volatility (20d) = AVERAGE ( fact_daily_price[volatility_20d] )
+
+Traded Value = SUMX ( fact_daily_price, fact_daily_price[close_price] * fact_daily_price[volume] )
+
+Latest Close =
+VAR lastDate = MAX ( fact_daily_price[date_key] )
+RETURN CALCULATE ( MAX ( fact_daily_price[close_price] ), fact_daily_price[date_key] = lastDate )
+
+Price vs MA50 % =
+VAR lastDate = MAX ( fact_daily_price[date_key] )
+RETURN
+    DIVIDE (
+        CALCULATE ( MAX ( fact_daily_price[close_price] ), fact_daily_price[date_key] = lastDate ),
+        CALCULATE ( MAX ( fact_daily_price[ma_50] ), fact_daily_price[date_key] = lastDate )
+    ) - 1
+
+// ---- Data-quality panel ----
+Latest Run Id = CALCULATE ( MAX ( etl_load_run[load_run_id] ), etl_load_run[status] = "SUCCEEDED" )
+
+Latest Load Time =
+CALCULATE ( MAX ( etl_load_run[finished_at] ), etl_load_run[load_run_id] = [Latest Run Id] )
+
+Rows Rejected (latest run) =
+CALCULATE ( COUNTROWS ( etl_rejected_row ), etl_rejected_row[load_run_id] = [Latest Run Id] )
+
+Reject Rate (latest run) =
+DIVIDE (
+    [Rows Rejected (latest run)],
+    CALCULATE ( MAX ( etl_load_run[rows_read] ), etl_load_run[load_run_id] = [Latest Run Id] )
+)
